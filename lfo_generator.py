@@ -89,20 +89,44 @@ class Lfo:
         return bars_passed_time
 
     def get_control_value(self, T0):
-        radians = (self.get_beats_passed_time(T0) / BAR_TIME + self.offset) * self.frequency
+        radians = ((self.get_beats_passed_time(T0) / BAR_TIME) * 2 * np.pi + self.offset) * self.frequency 
         amplitude = np.sin(radians)
         control_value = int(round((amplitude + 1) / 2 * 127))
-        print(control_value)
+        #print(control_value)
+        #print(radians / (2 * np.pi) * 360)
         return control_value
+
+    def map_midi(self):
+        print('next')
+        time.sleep(5)
+        msg = mido.Message('control_change', channel=CHANNEL_NUMBER, control=self.control_number, value=127)
+        outport.send(msg)
+        return
     
 
 if __name__ == "__main__":
     inport, outport = open_midi_ports(MIDI_INPUT_PORT, MIDI_OUTPUT_PORT)
-    lfo_1 = Lfo(1, 1, 0)
+    lfo_1 = Lfo(1, 1.5, 180)
+    lfo_2 = Lfo(2, 2, 0)
+    lfo_3 = Lfo(3, 0.75, 180)
+    lfo_4 = Lfo(4, 0.4, 0)
+    lfo_5 = Lfo(5, 3, 180)
+    input('Press enter to start sync...')
+    #lfo_1.map_midi()
+    #lfo_2.map_midi()
+    #lfo_3.map_midi()
+    #lfo_4.map_midi()
+    lfo_5.map_midi()
     count_in()
     T0 = time.time()
     while 1:
         control_value = lfo_1.get_control_value(T0)
         send_midi_message(control_value)
-        time.sleep(0.1)
+        control_value = lfo_2.get_control_value(T0)
+        send_midi_message(control_value)
+        control_value = lfo_3.get_control_value(T0)
+        send_midi_message(control_value)
+        control_value = lfo_4.get_control_value(T0)
+        send_midi_message(control_value)
+        time.sleep(SIXTEENTH_NOTE_TIME)
     
